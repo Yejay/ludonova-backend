@@ -20,7 +20,23 @@ Spring Boot backend for the LudoNova game backlog manager.
    docker-compose up -d
    ```
 
-3. Run the application:
+3. To stop and remove the container (but keep the data volume):
+   ```bash
+   docker-compose down
+   ```
+
+4. To remove everything including the volume:
+   ```bash
+   docker-compose down -v
+   ```
+   Remember that after a full reset, your database will be empty and you'll need to run your application to reinitialize it with any seed data (like the test user) defined in DataInitializer.java.
+
+4. Alternatively, if you just want to restart the container without stopping and recreating it:
+   ```bash
+   docker restart ludonova_db
+   ```
+
+5. Run the application:
    ```bash
    ./mvnw spring-boot:run
    ```

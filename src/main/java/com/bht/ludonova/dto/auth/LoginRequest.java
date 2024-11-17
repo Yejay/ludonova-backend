@@ -1,4 +1,4 @@
-package com.bht.ludonova.dto;
+package com.bht.ludonova.dto.auth;
 
 import lombok.Data;
 

@@ -25,4 +25,8 @@ public class User {
 
     @Column
     private String email;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "steam_id")
+    private SteamUser steamUser;
 }
