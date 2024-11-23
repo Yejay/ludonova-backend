@@ -28,6 +28,37 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
     private final AuthenticationExceptionHandler authenticationExceptionHandler;
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        return http
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        // Public endpoints
+//                        .requestMatchers(
+//                                "/api/auth/login",
+//                                "/api/auth/refresh",
+//                                "/api/auth/steam/login",
+//                                "/api/auth/steam/return"
+//                        ).permitAll()
+//                        .requestMatchers("/api/test/public").permitAll()
+//                        // Protected endpoints
+//                        .requestMatchers("/api/games/**").authenticated()
+//                        .requestMatchers("/api/user/**").authenticated()
+//                        .anyRequest().authenticated()
+//                )
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                )
+//                .authenticationProvider(authenticationProvider())
+//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling(exc -> exc
+//                        .authenticationEntryPoint(authenticationExceptionHandler)
+//                        .accessDeniedHandler(authenticationExceptionHandler)
+//                )
+//                .build();
+//    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -39,9 +70,12 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/refresh",
                                 "/api/auth/steam/login",
-                                "/api/auth/steam/return"
+                                "/api/auth/steam/return",
+                                // Swagger UI and OpenAPI endpoints
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/test/public").permitAll()
                         // Protected endpoints
                         .requestMatchers("/api/games/**").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
@@ -58,6 +92,7 @@ public class SecurityConfig {
                 )
                 .build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -2,21 +2,39 @@ package com.bht.ludonova.model.enums;
 
 import lombok.Getter;
 
+
 @Getter
 public enum Platform {
-    STEAM("PC"),
-    PLAYSTATION("Console"),
-    XBOX("Console"),
-    NINTENDO_SWITCH("Console"),
-    PC_OTHER("PC");
+    // Sony PlayStation
+    PS1("PlayStation"),
+    PS2("PlayStation 2"),
+    PS3("PlayStation 3"),
+    PS4("PlayStation 4"),
+    PS5("PlayStation 5"),
 
-    private final String type;
+    // Microsoft Xbox
+    XBOX("Xbox"),
+    XBOX_360("Xbox 360"),
+    XBOX_ONE("Xbox One"),
+    XBOX_SERIES_X("Xbox Series X"),
+    XBOX_SERIES_S("Xbox Series S"),
 
-    Platform(String type) {
-        this.type = type;
+    // Nintendo
+    SWITCH("Nintendo Switch"),
+    WII("Nintendo Wii"),
+    WII_U("Nintendo Wii U"),
+    NINTENDO_3DS("Nintendo 3DS"),
+    NINTENDO_DS("Nintendo DS"),
+
+    // PC Platforms
+    PC("PC"),
+    MAC("Mac"),
+    LINUX("Linux");
+
+    private final String displayName;
+
+    Platform(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getType() {
-        return type;
-    }
 }

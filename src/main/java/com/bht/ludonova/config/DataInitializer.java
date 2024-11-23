@@ -6,6 +6,7 @@ import com.bht.ludonova.model.User;
 import com.bht.ludonova.model.enums.GameSource;
 import com.bht.ludonova.model.enums.GameStatus;
 import com.bht.ludonova.model.enums.Platform;
+import com.bht.ludonova.model.enums.Role;
 import com.bht.ludonova.repository.GameInstanceRepository;
 import com.bht.ludonova.repository.GameRepository;
 import com.bht.ludonova.repository.UserRepository;
@@ -16,9 +17,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
-
 
 @Configuration
 public class DataInitializer {
@@ -32,24 +33,37 @@ public class DataInitializer {
             PasswordEncoder passwordEncoder
     ) {
         return args -> {
-            // Create test user if doesn't exist
+            // Create regular test user if doesn't exist
             if (userRepository.findByUsername("test").isEmpty()) {
                 User testUser = User.builder()
                         .username("test")
                         .password(passwordEncoder.encode("test123"))
                         .email("test@example.com")
+                        .role(Role.USER)  // Set regular user role
                         .build();
                 userRepository.save(testUser);
                 log.info("Test user created successfully");
             }
 
+            // Create admin user if doesn't exist
+            if (userRepository.findByUsername("admin").isEmpty()) {
+                User adminUser = User.builder()
+                        .username("admin")
+                        .password(passwordEncoder.encode("admin123"))
+                        .email("admin@example.com")
+                        .role(Role.ADMIN)  // Set admin role
+                        .build();
+                userRepository.save(adminUser);
+                log.info("Admin user created successfully");
+            }
+
             // Create test game
             Game testGame = Game.builder()
                     .title("Half-Life 2")
-                    .platform(Platform.STEAM)
+                    .platform(Platform.PC)
                     .apiId("220")
                     .source(GameSource.STEAM)
-                    .releaseDate(LocalDateTime.of(2004, 11, 16, 0, 0))
+                    .releaseDate(LocalDate.of(2004, 11, 16))
                     .genres(Set.of("FPS", "Action", "Sci-Fi"))
                     .build();
 
