@@ -53,7 +53,7 @@ public class UserController {
     
     // Get all users (admin only)
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepository.findAll();
         users.forEach(user -> user.setPassword(null));
@@ -62,7 +62,7 @@ public class UserController {
 
     // Get specific user (admin only)
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         return userRepository.findById(id)
                 .map(user -> {
@@ -74,7 +74,7 @@ public class UserController {
 
     // Update any user (admin only)
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,
             @RequestBody UserUpdateDTO updateDTO) {
@@ -95,7 +95,7 @@ public class UserController {
 
     // Delete user (admin only)
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);

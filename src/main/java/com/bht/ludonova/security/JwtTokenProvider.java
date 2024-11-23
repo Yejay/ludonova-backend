@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -69,11 +70,13 @@ public class JwtTokenProvider {
     private Map<String, Object> createClaims(Authentication authentication) {
         Map<String, Object> claims = new HashMap<>();
 
-        // Add user authorities/roles
-        String authorities = authentication.getAuthorities().stream()
+        // Convert authorities to a list
+        List<String> authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-        claims.put("authorities", authorities);
+                .collect(Collectors.toList());
+
+        claims.put("authorities", authorities);  // Store as a list instead of a string
+        log.debug("Creating token with authorities: {}", authorities);
 
         // Add token type
         claims.put("type", "Bearer");
@@ -81,12 +84,19 @@ public class JwtTokenProvider {
         return claims;
     }
 
-    public String getUsernameFromToken(String token, boolean isRefreshToken) {
-        return getClaimsFromToken(token, isRefreshToken).getSubject();
-    }
+//    public String getUsernameFromToken(String token) {
+//        return getUsernameFromToken(token, false);
+//    }
 
     public String getUsernameFromToken(String token) {
-        return getUsernameFromToken(token, false);
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        log.debug("Token claims: {}", claims);
+        return claims.getSubject();
     }
 
     public boolean validateToken(String token) {

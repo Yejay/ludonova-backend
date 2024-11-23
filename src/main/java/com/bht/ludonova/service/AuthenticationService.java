@@ -6,6 +6,7 @@ import com.bht.ludonova.service.auth.AuthenticationStrategy;
 import com.bht.ludonova.service.auth.BasicAuthenticationStrategy;
 import com.bht.ludonova.service.auth.SteamAuthenticationStrategy;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -24,13 +25,26 @@ public class AuthenticationService {
         );
     }
 
+//    public AuthenticationResponse authenticate(String strategy, Map<String, String> credentials) {
+//        AuthenticationStrategy authStrategy = authenticationStrategies.get(strategy);
+//        if (authStrategy == null) {
+//            throw new AuthenticationException("Unsupported authentication strategy: " + strategy);
+//        }
+//
+//        return authStrategy.authenticate(credentials);
+//    }
+
     public AuthenticationResponse authenticate(String strategy, Map<String, String> credentials) {
         AuthenticationStrategy authStrategy = authenticationStrategies.get(strategy);
         if (authStrategy == null) {
             throw new AuthenticationException("Unsupported authentication strategy: " + strategy);
         }
 
-        return authStrategy.authenticate(credentials);
+        AuthenticationResponse response = authStrategy.authenticate(credentials);
+        log.debug("Authenticated user with authorities: {}",
+                SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+
+        return response;
     }
 
     public AuthenticationResponse refresh(String refreshToken) {

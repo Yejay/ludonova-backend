@@ -34,15 +34,18 @@ public class DataInitializer {
     ) {
         return args -> {
             // Create regular test user if doesn't exist
+            User testUser;
             if (userRepository.findByUsername("test").isEmpty()) {
-                User testUser = User.builder()
+                testUser = User.builder()
                         .username("test")
                         .password(passwordEncoder.encode("test123"))
                         .email("test@example.com")
-                        .role(Role.USER)  // Set regular user role
+                        .role(Role.USER)
                         .build();
-                userRepository.save(testUser);
+                testUser = userRepository.save(testUser);
                 log.info("Test user created successfully");
+            } else {
+                testUser = userRepository.findByUsername("test").get();
             }
 
             // Create admin user if doesn't exist
@@ -51,30 +54,34 @@ public class DataInitializer {
                         .username("admin")
                         .password(passwordEncoder.encode("admin123"))
                         .email("admin@example.com")
-                        .role(Role.ADMIN)  // Set admin role
+                        .role(Role.ADMIN)
                         .build();
                 userRepository.save(adminUser);
                 log.info("Admin user created successfully");
             }
 
-            // Create test game
-            Game testGame = Game.builder()
-                    .title("Half-Life 2")
-                    .platform(Platform.PC)
-                    .apiId("220")
-                    .source(GameSource.STEAM)
-                    .releaseDate(LocalDate.of(2004, 11, 16))
-                    .genres(Set.of("FPS", "Action", "Sci-Fi"))
-                    .build();
+            // Create test game if it doesn't exist
+            Game testGame;
+            if (gameRepository.findByApiIdAndSource("220", GameSource.STEAM).isEmpty()) {
+                testGame = Game.builder()
+                        .title("Half-Life 2")
+                        .platform(Platform.PC)
+                        .apiId("220")
+                        .source(GameSource.STEAM)
+                        .releaseDate(LocalDate.of(2004, 11, 16))
+                        .genres(Set.of("FPS", "Action", "Sci-Fi"))
+                        .build();
+                testGame = gameRepository.save(testGame);
+                log.info("Test game created successfully");
+            } else {
+                testGame = gameRepository.findByApiIdAndSource("220", GameSource.STEAM).get();
+                log.debug("Test game already exists");
+            }
 
-            testGame = gameRepository.save(testGame);
-            log.info("Test game created successfully");
-
-            // Create game instance for test user
-            User user = userRepository.findByUsername("test").get();
-            if (!gameInstanceRepository.existsByUserIdAndGameId(user.getId(), testGame.getId())) {
+            // Create game instance for test user if it doesn't exist
+            if (!gameInstanceRepository.existsByUserIdAndGameId(testUser.getId(), testGame.getId())) {
                 GameInstance instance = GameInstance.builder()
-                        .user(user)
+                        .user(testUser)
                         .game(testGame)
                         .status(GameStatus.PLAYING)
                         .progressPercentage(0)
@@ -84,6 +91,8 @@ public class DataInitializer {
                         .build();
                 gameInstanceRepository.save(instance);
                 log.info("Test game instance created successfully");
+            } else {
+                log.debug("Test game instance already exists");
             }
         };
     }

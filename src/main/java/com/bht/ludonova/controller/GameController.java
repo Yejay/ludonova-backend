@@ -1,66 +1,3 @@
-//package com.bht.ludonova.controller;
-//
-//import java.util.List;
-//
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.DeleteMapping;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.PathVariable;
-//import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.PutMapping;
-//import org.springframework.web.bind.annotation.RequestBody;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//import com.bht.ludonova.model.Game;
-//import com.bht.ludonova.model.enums.Platform;
-//import com.bht.ludonova.service.GameService;
-//
-//import lombok.RequiredArgsConstructor;
-//
-//@RestController
-//@RequestMapping("/api/games")
-//@RequiredArgsConstructor
-//public class GameController {
-//    private final GameService gameService;
-//
-//    @GetMapping
-//    public List<Game> getAllGames() {
-//        return gameService.findAll();
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Game> getGame(@PathVariable Long id) {
-//        return gameService.findById(id)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
-//
-//    @GetMapping("/platform/{platform}")
-//    public List<Game> getGamesByPlatform(@PathVariable Platform platform) {
-//        return gameService.findByPlatform(platform);
-//    }
-//
-//    @PostMapping
-//    public ResponseEntity<Game> createGame(@RequestBody Game game) {
-//        return ResponseEntity.ok(gameService.save(game));
-//    }
-//
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Game> updateGame(@PathVariable Long id, @RequestBody Game game) {
-//        if (!id.equals(game.getId())) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        return ResponseEntity.ok(gameService.save(game));
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deleteGame(@PathVariable Long id) {
-//        gameService.deleteById(id);
-//        return ResponseEntity.noContent().build();
-//    }
-//}
-
 package com.bht.ludonova.controller;
 
 import java.util.List;
@@ -106,13 +43,13 @@ public class GameController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Game> createGame(@RequestBody Game game) {
         return ResponseEntity.ok(gameService.save(game));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Game> updateGame(@PathVariable Long id, @RequestBody Game game) {
         if (!id.equals(game.getId())) {
             return ResponseEntity.badRequest().build();
@@ -121,7 +58,7 @@ public class GameController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteGame(@PathVariable Long id) {
         gameService.deleteById(id);
         return ResponseEntity.noContent().build();
