@@ -1,10 +1,16 @@
 package com.bht.ludonova.model;
 
+import com.bht.ludonova.model.enums.GameSource;
+import com.bht.ludonova.model.enums.Platform;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -20,23 +26,28 @@ public class Game {
     @Column(nullable = false)
     private String title;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String platform;
+    private Platform platform;
 
+    @Column(name = "api_id")
+    private String apiId;  // Steam AppId or RAWG ID
+
+    @Column(name = "release_date")
+    private LocalDate releaseDate;
+
+    @ElementCollection
+    @CollectionTable(name = "game_genres",
+            joinColumns = @JoinColumn(name = "game_id"))
+    @Column(name = "genre")
+    @Builder.Default
+    private Set<String> genres = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private GameSource source;
 
-    private Double rating;
-
-    private String notes;
-
-    @Column(name = "last_played")
-    private String lastPlayed;
-
-    @Column(name = "play_time")
-    private Integer playTime;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @OneToMany(mappedBy = "game")
+    @Builder.Default
+    private Set<GameInstance> instances = new HashSet<>();
 }
