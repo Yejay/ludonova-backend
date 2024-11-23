@@ -96,6 +96,12 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- DataBase Migration with Flyway -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- Environment Variables -->
         <dependency>
             <groupId>me.paulschwarz</groupId>
