@@ -3,6 +3,7 @@ package com.bht.ludonova.controller;
 import com.bht.ludonova.dto.auth.AuthenticationResponse;
 import com.bht.ludonova.dto.auth.RefreshTokenRequest;
 import com.bht.ludonova.dto.auth.LoginRequest;
+import com.bht.ludonova.exception.AuthenticationException;
 import com.bht.ludonova.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,13 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticationResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        AuthenticationResponse response = authService.refresh(request.getRefreshToken());
-        return ResponseEntity.ok(response);
+        log.debug("Received refresh token request with token: {}", request.getRefreshToken());
+        try {
+            AuthenticationResponse response = authService.refresh(request.getRefreshToken());
+            return ResponseEntity.ok(response);
+        } catch (AuthenticationException e) {
+            log.error("Failed to refresh token", e);
+            throw new AuthenticationException("Invalid refresh token");
+        }
     }
 }

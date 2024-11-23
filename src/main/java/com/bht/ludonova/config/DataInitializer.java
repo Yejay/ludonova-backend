@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -60,9 +61,10 @@ public class DataInitializer {
                 log.info("Admin user created successfully");
             }
 
-            // Create test game if it doesn't exist
+            // Find or create test game
             Game testGame;
-            if (gameRepository.findByApiIdAndSource("220", GameSource.STEAM).isEmpty()) {
+            List<Game> existingGames = gameRepository.findAllByApiIdAndSource("220", GameSource.STEAM);
+            if (existingGames.isEmpty()) {
                 testGame = Game.builder()
                         .title("Half-Life 2")
                         .platform(Platform.PC)
@@ -74,8 +76,8 @@ public class DataInitializer {
                 testGame = gameRepository.save(testGame);
                 log.info("Test game created successfully");
             } else {
-                testGame = gameRepository.findByApiIdAndSource("220", GameSource.STEAM).get();
-                log.debug("Test game already exists");
+                testGame = existingGames.get(0);
+                log.debug("Using existing test game");
             }
 
             // Create game instance for test user if it doesn't exist

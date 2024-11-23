@@ -1,6 +1,7 @@
 package com.bht.ludonova.service;
 
 import com.bht.ludonova.dto.steam.SteamUserDTO;
+import com.bht.ludonova.dto.user.CreateUserDTO;
 import com.bht.ludonova.dto.user.UserDTO;
 import com.bht.ludonova.dto.user.UserUpdateDTO;
 import com.bht.ludonova.exception.AuthenticationException;
@@ -28,6 +29,23 @@ public class UserService {
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public UserDTO createUser(CreateUserDTO createUserDTO) {
+        // Check if username already exists
+        if (userRepository.findByUsername(createUserDTO.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+        User user = User.builder()
+                .username(createUserDTO.getUsername())
+                .password(passwordEncoder.encode(createUserDTO.getPassword()))
+                .email(createUserDTO.getEmail())
+                .role(createUserDTO.getRole())
+                .build();
+
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
     }
 
     public User getOrCreateSteamUser(SteamUser steamUser) {

@@ -61,12 +61,15 @@ public class BasicAuthenticationStrategy implements AuthenticationStrategy {
 
     @Override
     public AuthenticationResponse refresh(String refreshToken) {
+        log.debug("Attempting to refresh token: {}", refreshToken);
         try {
             if (!tokenProvider.validateToken(refreshToken, true)) {
+                log.error("Invalid refresh token validation");
                 throw new AuthenticationException("Invalid refresh token");
             }
 
             String username = tokenProvider.getUsernameFromToken(refreshToken, true);
+            log.debug("Extracted username from refresh token: {}", username);
             UserDTO user = userService.getUserDTOByUsername(username);
 
             String newAccessToken = tokenProvider.generateAccessToken(username);

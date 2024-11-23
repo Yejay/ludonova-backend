@@ -1,10 +1,16 @@
 package com.bht.ludonova.controller;
 
+import com.bht.ludonova.dto.ErrorResponse;
+import com.bht.ludonova.dto.user.CreateUserDTO;
+import com.bht.ludonova.dto.user.UserDTO;
 import com.bht.ludonova.dto.user.UserUpdateDTO;
 import com.bht.ludonova.model.User;
 import com.bht.ludonova.model.enums.Role;
 import com.bht.ludonova.repository.UserRepository;
+import com.bht.ludonova.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,8 +23,16 @@ import java.util.List;
 @RequestMapping("/api/user")
 public class UserController {
 
+    private final UserRepository userRepository;
+    private final UserService userService;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserController(UserRepository userRepository, UserService userService) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+    }
+
+
 
     // Get current user's profile
     @GetMapping("/current")
@@ -50,7 +64,20 @@ public class UserController {
     }
 
     // Admin endpoints below
-    
+
+    @PostMapping("/create")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
+        try {
+            UserDTO createdUser = userService.createUser(createUserDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorResponse("USER_EXISTS", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        }
+    }
+
     // Get all users (admin only)
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
