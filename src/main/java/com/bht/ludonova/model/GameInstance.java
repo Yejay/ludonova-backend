@@ -41,5 +41,8 @@ public class GameInstance {
     @Column(name = "last_played")
     private LocalDateTime lastPlayed;
 
+    @Column(name = "added_at")
+    private LocalDateTime addedAt;
+
     private String notes;
 }
