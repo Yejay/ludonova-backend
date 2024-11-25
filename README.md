@@ -55,4 +55,10 @@ Run tests with:
 ```bash
 ./mvnw test
 ```
+
+## Development Setup
+### SSL Certificate
+1. Generate a self-signed certificate:
+```bash
+keytool -genkeypair -alias ludonova -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore ludonova.p12 -validity 365
 ```
