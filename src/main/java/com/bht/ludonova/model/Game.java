@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,19 +27,18 @@ public class Game {
     @Column(nullable = false)
     private String title;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Platform platform;
+    @Column(nullable = false, unique = true)
+    private String slug;
 
-    @Column(name = "api_id")
-    private String apiId;  // Steam AppId or RAWG ID
+    @Column(name = "api_id", unique = true)
+    private String apiId;
 
-    @Column(name = "release_date")
-    private LocalDate releaseDate;
+    @Column(name = "background_image")
+    private String backgroundImage;
 
     @ElementCollection
-    @CollectionTable(name = "game_genres",
-            joinColumns = @JoinColumn(name = "game_id"))
+    @CollectionTable(name = "game_genres", 
+                    joinColumns = @JoinColumn(name = "game_id"))
     @Column(name = "genre")
     @Builder.Default
     private Set<String> genres = new HashSet<>();
@@ -47,7 +47,11 @@ public class Game {
     @Column(nullable = false)
     private GameSource source;
 
-    @OneToMany(mappedBy = "game")
-    @Builder.Default
-    private Set<GameInstance> instances = new HashSet<>();
+    @Column(name = "rawg_last_updated")
+    private LocalDateTime rawgLastUpdated;
+
+    @Column(name = "release_date")
+    private LocalDate releaseDate;
+
+    private Double rating;
 }

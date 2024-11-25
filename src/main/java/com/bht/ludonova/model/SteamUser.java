@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Data
 @Entity
@@ -18,5 +19,6 @@ public class SteamUser {
     private String avatarUrl;
     
     @OneToOne(mappedBy = "steamUser")
+    @JsonBackReference
     private User user;
 } 

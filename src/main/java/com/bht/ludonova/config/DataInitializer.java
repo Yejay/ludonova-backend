@@ -62,40 +62,40 @@ public class DataInitializer {
             }
 
             // Find or create test game
-            Game testGame;
-            List<Game> existingGames = gameRepository.findAllByApiIdAndSource("220", GameSource.STEAM);
-            if (existingGames.isEmpty()) {
-                testGame = Game.builder()
-                        .title("Half-Life 2")
-                        .platform(Platform.PC)
-                        .apiId("220")
-                        .source(GameSource.STEAM)
-                        .releaseDate(LocalDate.of(2004, 11, 16))
-                        .genres(Set.of("FPS", "Action", "Sci-Fi"))
-                        .build();
-                testGame = gameRepository.save(testGame);
-                log.info("Test game created successfully");
-            } else {
-                testGame = existingGames.get(0);
-                log.debug("Using existing test game");
-            }
+            // Game testGame;
+            // List<Game> existingGames = gameRepository.findAllByApiIdAndSource("220", GameSource.STEAM);
+            // if (existingGames.isEmpty()) {
+            //     testGame = Game.builder()
+            //             .title("Half-Life 2")
+            //             .platform(Platform.PC)
+            //             .apiId("220")
+            //             .source(GameSource.STEAM)
+            //             .releaseDate(LocalDate.of(2004, 11, 16))
+            //             .genres(Set.of("FPS", "Action", "Sci-Fi"))
+            //             .build();
+            //     testGame = gameRepository.save(testGame);
+            //     log.info("Test game created successfully");
+            // } else {
+            //     testGame = existingGames.get(0);
+            //     log.debug("Using existing test game");
+            // }
 
             // Create game instance for test user if it doesn't exist
-            if (!gameInstanceRepository.existsByUserIdAndGameId(testUser.getId(), testGame.getId())) {
-                GameInstance instance = GameInstance.builder()
-                        .user(testUser)
-                        .game(testGame)
-                        .status(GameStatus.PLAYING)
-                        .progressPercentage(0)
-                        .playTime(0)
-                        .lastPlayed(LocalDateTime.now())
-                        .notes("Just started playing")
-                        .build();
-                gameInstanceRepository.save(instance);
-                log.info("Test game instance created successfully");
-            } else {
-                log.debug("Test game instance already exists");
-            }
+            // if (!gameInstanceRepository.existsByUserIdAndGameId(testUser.getId(), testGame.getId())) {
+            //     GameInstance instance = GameInstance.builder()
+            //             .user(testUser)
+            //             .game(testGame)
+            //             .status(GameStatus.PLAYING)
+            //             .progressPercentage(0)
+            //             .playTime(0)
+            //             .lastPlayed(LocalDateTime.now())
+            //             .notes("Just started playing")
+            //             .build();
+            //     gameInstanceRepository.save(instance);
+            //     log.info("Test game instance created successfully");
+            // } else {
+            //     log.debug("Test game instance already exists");
+            // }
         };
     }
 }

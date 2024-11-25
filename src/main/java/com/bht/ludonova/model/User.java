@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Builder
@@ -29,6 +30,7 @@ public class User {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "steam_id")
+    @JsonManagedReference
     private SteamUser steamUser;
 
     @Enumerated(EnumType.STRING)

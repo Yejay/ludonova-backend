@@ -71,3 +71,11 @@ Thumbs.db
 # virtual machine crash logs
 hs_err_pid*
 replay_pid*
+
+# SSL/TLS Certificates
+*.p12
+*.pem
+*.key
+*.crt
+*.cer
+*.der
