@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "game_instances")
+@Table(name = "game_instances", indexes = {
+        @Index(name = "idx_game_instance_user_id", columnList = "user_id"),
+        @Index(name = "idx_game_instance_user_game", columnList = "user_id,game_id", unique = true)
+})
 public class GameInstance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

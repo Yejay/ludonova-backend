@@ -1,23 +1,23 @@
 package com.bht.ludonova.controller;
 
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
-import com.bht.ludonova.model.GameInstance;
+import com.bht.ludonova.dto.ErrorResponse;
+import com.bht.ludonova.dto.gameInstance.*;
+import com.bht.ludonova.model.User;
 import com.bht.ludonova.model.enums.GameStatus;
+import com.bht.ludonova.exception.*;
 import com.bht.ludonova.service.GameInstanceService;
+import com.bht.ludonova.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,45 +25,78 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GameInstanceController {
     private final GameInstanceService gameInstanceService;
+    private final UserService userService;
 
-    @GetMapping("/user/{userId}")
-    public List<GameInstance> getUserGameInstances(@PathVariable Long userId) {
-        return gameInstanceService.findByUserId(userId);
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<GameInstanceResponseDTO>> getUserGameInstances(Pageable pageable) {
+        User currentUser = userService.getCurrentUser();
+        return ResponseEntity.ok(gameInstanceService.getUserGameInstances(currentUser.getId(), pageable));
     }
 
-    @GetMapping("/user/{userId}/status/{status}")
-    public List<GameInstance> getUserGameInstancesByStatus(
-            @PathVariable Long userId,
+    @GetMapping("/status/{status}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<GameInstanceResponseDTO>> getUserGameInstancesByStatus(
             @PathVariable GameStatus status) {
-        return gameInstanceService.findByUserIdAndStatus(userId, status);
+        User currentUser = userService.getCurrentUser();
+        return ResponseEntity.ok(gameInstanceService.getUserGameInstancesByStatus(currentUser.getId(), status));
     }
 
     @PostMapping
-    public ResponseEntity<GameInstance> createGameInstance(@RequestBody GameInstance gameInstance) {
-        return ResponseEntity.ok(gameInstanceService.save(gameInstance));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> createGameInstance(@RequestBody @Valid GameInstanceCreateDTO dto) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            GameInstanceResponseDTO created = gameInstanceService.createGameInstance(currentUser.getId(), dto);
+            return ResponseEntity.ok(created);
+        } catch (GameAlreadyAddedException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorResponse("GAME_ALREADY_EXISTS", "Game already in your list", 400));
+        } catch (GameNotFoundException e) {
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GameInstance> updateGameInstance(
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateGameInstance(
             @PathVariable Long id,
-            @RequestBody GameInstance gameInstance) {
-        if (!id.equals(gameInstance.getId())) {
-            return ResponseEntity.badRequest().build();
+            @RequestBody @Valid GameInstanceUpdateDTO dto) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            GameInstanceResponseDTO updated = gameInstanceService.updateGameInstance(currentUser.getId(), id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (GameInstanceNotFoundException | UnauthorizedException e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(gameInstanceService.save(gameInstance));
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateGameStatus(
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateGameStatus(
             @PathVariable Long id,
             @RequestParam GameStatus status) {
-        gameInstanceService.updateStatus(id, status);
-        return ResponseEntity.ok().build();
+        try {
+            User currentUser = userService.getCurrentUser();
+            GameInstanceResponseDTO updated = gameInstanceService.updateGameStatus(currentUser.getId(), id, status);
+            return ResponseEntity.ok(updated);
+        } catch (GameInstanceNotFoundException | UnauthorizedException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteGameInstance(@PathVariable Long id) {
-        gameInstanceService.deleteById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            User currentUser = userService.getCurrentUser();
+            gameInstanceService.deleteGameInstance(currentUser.getId(), id);
+            return ResponseEntity.noContent().build();
+        } catch (GameInstanceNotFoundException | UnauthorizedException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -136,7 +136,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
