@@ -12,7 +12,7 @@ import java.util.List;
 @Configuration
 public class WebConfig {
 
-    @Value("${cors.allowed-origins}")
+    @Value("${spring.web.cors.allowed-origins}")
     private List<String> allowedOrigins;
 
     @Bean
