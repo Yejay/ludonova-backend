@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Builder
@@ -48,4 +49,18 @@ public class GameInstance {
     private LocalDateTime addedAt;
 
     private String notes;
+
+    @Column(name = "playtime_minutes")
+    private Integer playtimeMinutes;
+
+    @Column(name = "last_played_at")
+    private Date lastPlayedAt;
+
+    public void setPlaytimeMinutes(Integer playtimeMinutes) {
+        this.playtimeMinutes = playtimeMinutes;
+    }
+
+    public void setLastPlayedAt(Date lastPlayedAt) {
+        this.lastPlayedAt = lastPlayedAt;
+    }
 }

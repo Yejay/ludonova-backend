@@ -69,6 +69,7 @@ public class GameService {
         }
     }
 
+    @Transactional
     public Page<Game> searchGames(String searchQuery, Pageable pageable) {
         if (searchQuery == null || searchQuery.trim().isEmpty()) {
             return gameRepository.findAllByOrderByRatingDesc(pageable);
@@ -81,7 +82,10 @@ public class GameService {
         // If insufficient results, fetch from RAWG
         if (localResults.getContent().size() < pageable.getPageSize()) {
             try {
-                fetchAndSyncGamesFromRawg(searchQuery, pageable.getPageNumber() + 1);
+                // Fetch first 2 pages from RAWG for better performance
+                for (int i = 1; i <= 2; i++) {
+                    fetchAndSyncGamesFromRawg(searchQuery, i);
+                }
                 return gameRepository.findByTitleContainingIgnoreCase(
                         searchQuery.trim(), pageable);
             } catch (Exception e) {
