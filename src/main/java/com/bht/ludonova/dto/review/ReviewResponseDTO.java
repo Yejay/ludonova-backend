@@ -12,6 +12,7 @@ public class ReviewResponseDTO {
     private Long gameId;
     private String gameTitle;
     private Long userId;
+    private String username;
     private Integer rating;
     private String reviewText;
     private LocalDateTime createdAt;

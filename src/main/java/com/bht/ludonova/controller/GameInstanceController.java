@@ -19,11 +19,14 @@ import com.bht.ludonova.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/game-instances")
 @RequiredArgsConstructor
 public class GameInstanceController {
+    private static final Logger log = LoggerFactory.getLogger(GameInstanceController.class);
     private final GameInstanceService gameInstanceService;
     private final UserService userService;
 
@@ -40,6 +43,21 @@ public class GameInstanceController {
             @PathVariable GameStatus status) {
         User currentUser = userService.getCurrentUser();
         return ResponseEntity.ok(gameInstanceService.getUserGameInstancesByStatus(currentUser.getId(), status));
+    }
+
+    @GetMapping("/by-game/{gameId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<GameInstanceResponseDTO> getGameInstanceByGame(@PathVariable Long gameId) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            log.info("Fetching game instance for user {} and game {}", currentUser.getId(), gameId);
+            GameInstanceResponseDTO instance = gameInstanceService.getGameInstanceByGame(currentUser.getId(), gameId);
+            log.info("Game instance found: {}", instance != null);
+            return instance != null ? ResponseEntity.ok(instance) : ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error fetching game instance for game {}", gameId, e);
+            throw e;
+        }
     }
 
     @PostMapping
@@ -97,6 +115,19 @@ public class GameInstanceController {
             return ResponseEntity.noContent().build();
         } catch (GameInstanceNotFoundException | UnauthorizedException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<GameInstanceStatsDTO> getUserGameStats() {
+        try {
+            User currentUser = userService.getCurrentUser();
+            GameInstanceStatsDTO stats = gameInstanceService.getUserGameStats(currentUser.getId());
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            log.error("Error fetching game instance stats", e);
+            throw e;
         }
     }
 }

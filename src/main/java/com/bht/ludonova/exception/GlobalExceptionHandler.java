@@ -80,4 +80,14 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(DuplicateReviewException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateReviewException(DuplicateReviewException ex) {
+        ErrorResponse error = new ErrorResponse(
+                "DUPLICATE_REVIEW",
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 }

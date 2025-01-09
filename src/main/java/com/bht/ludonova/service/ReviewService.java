@@ -6,11 +6,13 @@ import com.bht.ludonova.dto.review.ReviewUpdateDTO;
 import com.bht.ludonova.exception.GameNotFoundException;
 import com.bht.ludonova.exception.ReviewNotFoundException;
 import com.bht.ludonova.exception.UnauthorizedException;
+import com.bht.ludonova.exception.DuplicateReviewException;
 import com.bht.ludonova.model.Game;
 import com.bht.ludonova.model.Review;
 import com.bht.ludonova.model.User;
 import com.bht.ludonova.repository.GameRepository;
 import com.bht.ludonova.repository.ReviewRepository;
+import com.bht.ludonova.repository.GameInstanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +24,23 @@ import java.util.List;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final GameRepository gameRepository;
+    private final GameInstanceRepository gameInstanceRepository;
     private final UserService userService;
 
     public ReviewResponseDTO createReview(Long userId, ReviewCreateDTO dto) {
         User user = userService.getCurrentUser();
         Game game = gameRepository.findById(dto.getGameId())
                 .orElseThrow(() -> new GameNotFoundException("Game not found"));
+
+        // Check if user owns the game
+        if (!gameInstanceRepository.existsByUserIdAndGameId(userId, dto.getGameId())) {
+            throw new UnauthorizedException("You must own the game to review it");
+        }
+
+        // Check if user has already reviewed this game
+        if (reviewRepository.findByUserIdAndGameId(userId, dto.getGameId()).isPresent()) {
+            throw new DuplicateReviewException("You have already reviewed this game");
+        }
 
         Review review = Review.builder()
                 .user(user)
@@ -96,6 +109,7 @@ public class ReviewService {
                 .gameId(review.getGame().getId())
                 .gameTitle(review.getGame().getTitle())
                 .userId(review.getUser().getId())
+                .username(review.getUser().getUsername())
                 .rating(review.getRating())
                 .reviewText(review.getReviewText())
                 .createdAt(review.getCreatedAt())

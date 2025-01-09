@@ -2,6 +2,8 @@ package com.bht.ludonova.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class GameInstanceService {
+    private static final Logger log = LoggerFactory.getLogger(GameInstanceService.class);
     private final GameInstanceRepository gameInstanceRepository;
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
@@ -100,6 +103,24 @@ public class GameInstanceService {
         );
     }
 
+    public GameInstanceResponseDTO getGameInstanceByGame(Long userId, Long gameId) {
+        log.info("Looking up game instance for user {} and game {}", userId, gameId);
+        try {
+            return gameInstanceRepository.findByUserIdAndGameId(userId, gameId)
+                    .map(instance -> {
+                        log.info("Found game instance: {}", instance);
+                        return gameInstanceMapper.toDTO(instance);
+                    })
+                    .orElseGet(() -> {
+                        log.info("No game instance found");
+                        return null;
+                    });
+        } catch (Exception e) {
+            log.error("Error finding game instance", e);
+            throw e;
+        }
+    }
+
     public GameInstanceResponseDTO updateGameStatus(Long userId, Long instanceId, GameStatus status) {
         GameInstanceUpdateDTO updateDTO = new GameInstanceUpdateDTO();
         updateDTO.setStatus(status);
@@ -116,5 +137,49 @@ public class GameInstanceService {
         }
 
         gameInstanceRepository.delete(instance);
+    }
+
+    public GameInstanceStatsDTO getUserGameStats(Long userId) {
+        List<GameInstance> instances = gameInstanceRepository.findByUserId(userId);
+        
+        int playing = 0;
+        int completed = 0;
+        int planToPlay = 0;
+        int dropped = 0;
+        int totalPlayTime = 0;
+        double totalCompletion = 0;
+        int gamesWithCompletion = 0;
+
+        for (GameInstance instance : instances) {
+            switch (instance.getStatus()) {
+                case PLAYING -> playing++;
+                case COMPLETED -> completed++;
+                case PLAN_TO_PLAY -> planToPlay++;
+                case DROPPED -> dropped++;
+            }
+
+            if (instance.getPlayTime() != null) {
+                totalPlayTime += instance.getPlayTime();
+            }
+
+            if (instance.getProgressPercentage() != null && instance.getProgressPercentage() > 0) {
+                totalCompletion += instance.getProgressPercentage();
+                gamesWithCompletion++;
+            }
+        }
+
+        double averageCompletion = gamesWithCompletion > 0 
+            ? totalCompletion / gamesWithCompletion 
+            : 0.0;
+
+        return GameInstanceStatsDTO.builder()
+                .totalGames(instances.size())
+                .playing(playing)
+                .completed(completed)
+                .planToPlay(planToPlay)
+                .dropped(dropped)
+                .totalPlayTime(totalPlayTime)
+                .averageCompletion(averageCompletion)
+                .build();
     }
 }
