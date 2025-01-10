@@ -32,9 +32,12 @@ public class GameInstanceController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<GameInstanceResponseDTO>> getUserGameInstances(Pageable pageable) {
+    public ResponseEntity<Page<GameInstanceResponseDTO>> getUserGameInstances(
+            Pageable pageable,
+            @RequestParam(required = false) GameStatus status,
+            @RequestParam(required = false, defaultValue = "playTime") String sort) {
         User currentUser = userService.getCurrentUser();
-        return ResponseEntity.ok(gameInstanceService.getUserGameInstances(currentUser.getId(), pageable));
+        return ResponseEntity.ok(gameInstanceService.getUserGameInstances(currentUser.getId(), pageable, status, sort));
     }
 
     @GetMapping("/status/{status}")
@@ -71,6 +74,24 @@ public class GameInstanceController {
             return ResponseEntity
                     .badRequest()
                     .body(new ErrorResponse("GAME_ALREADY_EXISTS", "Game already in your list", 400));
+        } catch (GameNotFoundException e) {
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
+    }
+
+    @PostMapping("/batch")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> createGameInstances(@RequestBody @Valid GameInstanceBatchCreateDTO dto) {
+        try {
+            User currentUser = userService.getCurrentUser();
+            List<GameInstanceResponseDTO> created = gameInstanceService.createGameInstances(currentUser.getId(), dto);
+            return ResponseEntity.ok(created);
+        } catch (GameAlreadyAddedException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorResponse("GAME_ALREADY_EXISTS", e.getMessage(), 400));
         } catch (GameNotFoundException e) {
             return ResponseEntity
                     .notFound()

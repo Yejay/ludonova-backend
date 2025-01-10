@@ -22,6 +22,9 @@ public class RawgGameDTO {
     @JsonProperty("ratings_count")
     private Integer ratingsCount;
 
+    @JsonProperty("metacritic")
+    private Integer metacritic;
+
     private List<PlatformInfo> platforms;
     private List<Genre> genres;
 

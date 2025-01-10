@@ -2,6 +2,7 @@ package com.bht.ludonova.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -91,10 +92,32 @@ public class GameInstanceService {
         return gameInstanceMapper.toDTO(gameInstanceRepository.save(instance));
     }
 
-    public Page<GameInstanceResponseDTO> getUserGameInstances(Long userId, Pageable pageable) {
-        return gameInstanceMapper.toDTOPage(
-                gameInstanceRepository.findByUserIdOrderByLastPlayedDesc(userId, pageable)
-        );
+    public Page<GameInstanceResponseDTO> getUserGameInstances(Long userId, Pageable pageable, GameStatus status, String sort) {
+        Page<GameInstance> instances;
+        
+        if (status != null) {
+            switch (sort) {
+                case "playTime":
+                    instances = gameInstanceRepository.findByUserIdAndStatusOrderByPlayTimeDesc(userId, status, pageable);
+                    break;
+                case "lastPlayed":
+                default:
+                    instances = gameInstanceRepository.findByUserIdAndStatusOrderByLastPlayedDesc(userId, status, pageable);
+                    break;
+            }
+        } else {
+            switch (sort) {
+                case "playTime":
+                    instances = gameInstanceRepository.findByUserIdOrderByPlayTimeDesc(userId, pageable);
+                    break;
+                case "lastPlayed":
+                default:
+                    instances = gameInstanceRepository.findByUserIdOrderByLastPlayedDesc(userId, pageable);
+                    break;
+            }
+        }
+
+        return gameInstanceMapper.toDTOPage(instances);
     }
 
     public List<GameInstanceResponseDTO> getUserGameInstancesByStatus(Long userId, GameStatus status) {
@@ -181,5 +204,37 @@ public class GameInstanceService {
                 .totalPlayTime(totalPlayTime)
                 .averageCompletion(averageCompletion)
                 .build();
+    }
+
+    @Transactional
+    public List<GameInstanceResponseDTO> createGameInstances(Long userId, GameInstanceBatchCreateDTO dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return dto.getGameInstances().stream()
+                .map(entry -> {
+                    // Check if user already has this game
+                    if (gameInstanceRepository.existsByUserIdAndGameId(userId, entry.getGameId())) {
+                        throw new GameAlreadyAddedException("Game already in user's list: " + entry.getGameId());
+                    }
+
+                    Game game = gameRepository.findById(entry.getGameId())
+                            .orElseThrow(() -> new GameNotFoundException("Game not found: " + entry.getGameId()));
+
+                    GameInstance gameInstance = GameInstance.builder()
+                            .user(user)
+                            .game(game)
+                            .status(entry.getStatus())
+                            .progressPercentage(entry.getProgressPercentage() != null ? entry.getProgressPercentage() : 0)
+                            .playTime(entry.getPlayTime() != null ? entry.getPlayTime() : 0)
+                            .notes(entry.getNotes())
+                            .addedAt(LocalDateTime.now())
+                            .lastPlayed(entry.getLastPlayed() != null ? entry.getLastPlayed() : 
+                                      (entry.getStatus() == GameStatus.PLAYING ? LocalDateTime.now() : null))
+                            .build();
+
+                    return gameInstanceMapper.toDTO(gameInstanceRepository.save(gameInstance));
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface GameRepository extends JpaRepository<Game, Long> {
     Optional<Game> findByApiIdAndSource(String apiId, GameSource source);
+    boolean existsByApiIdAndSource(String apiId, GameSource source);
     Page<Game> findAllByOrderByRatingDesc(Pageable pageable);
     Page<Game> findByTitleContainingIgnoreCase(String title, Pageable pageable);
     Optional<Game> findByApiId(String apiId);

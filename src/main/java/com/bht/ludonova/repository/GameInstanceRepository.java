@@ -19,6 +19,9 @@ public interface GameInstanceRepository extends JpaRepository<GameInstance, Long
     @Query("SELECT gi FROM GameInstance gi WHERE gi.user.id = :userId ORDER BY gi.lastPlayed DESC NULLS LAST")
     Page<GameInstance> findByUserIdOrderByLastPlayedDesc(@Param("userId") Long userId, Pageable pageable);
 
+    @Query("SELECT gi FROM GameInstance gi WHERE gi.user.id = :userId ORDER BY gi.playTime DESC")
+    Page<GameInstance> findByUserIdOrderByPlayTimeDesc(@Param("userId") Long userId, Pageable pageable);
+
     // Find all games with specific status
     @Query("SELECT gi FROM GameInstance gi WHERE gi.user.id = :userId AND gi.status = :status ORDER BY gi.lastPlayed DESC NULLS LAST")
     List<GameInstance> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") GameStatus status);
@@ -32,4 +35,10 @@ public interface GameInstanceRepository extends JpaRepository<GameInstance, Long
     // Basic find by user (you might want to deprecate this in favor of the pageable version)
     @Deprecated
     List<GameInstance> findByUserId(Long userId);
+
+    @Query("SELECT gi FROM GameInstance gi WHERE gi.user.id = :userId AND gi.status = :status ORDER BY gi.lastPlayed DESC NULLS LAST")
+    Page<GameInstance> findByUserIdAndStatusOrderByLastPlayedDesc(@Param("userId") Long userId, @Param("status") GameStatus status, Pageable pageable);
+
+    @Query("SELECT gi FROM GameInstance gi WHERE gi.user.id = :userId AND gi.status = :status ORDER BY gi.playTime DESC")
+    Page<GameInstance> findByUserIdAndStatusOrderByPlayTimeDesc(@Param("userId") Long userId, @Param("status") GameStatus status, Pageable pageable);
 }

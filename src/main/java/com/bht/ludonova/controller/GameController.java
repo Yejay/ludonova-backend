@@ -19,6 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class GameController {
     private final GameService gameService;
 
+    @GetMapping("/count")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Long> getGameCount() {
+        return ResponseEntity.ok(gameService.getGameCount());
+    }
+
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public Page<Game> searchGames(
