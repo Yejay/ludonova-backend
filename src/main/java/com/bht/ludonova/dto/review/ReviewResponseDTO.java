@@ -13,6 +13,7 @@ public class ReviewResponseDTO {
     private String gameTitle;
     private Long userId;
     private String username;
+    private String steamPersonaName;
     private Integer rating;
     private String reviewText;
     private LocalDateTime createdAt;

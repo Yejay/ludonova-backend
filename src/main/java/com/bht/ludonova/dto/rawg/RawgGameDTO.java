@@ -28,6 +28,9 @@ public class RawgGameDTO {
     private List<PlatformInfo> platforms;
     private List<Genre> genres;
 
+    @JsonProperty("description_raw")
+    private String description;
+
     @Data
     public static class PlatformInfo {
         private Platform platform;

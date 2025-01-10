@@ -110,6 +110,7 @@ public class ReviewService {
                 .gameTitle(review.getGame().getTitle())
                 .userId(review.getUser().getId())
                 .username(review.getUser().getUsername())
+                .steamPersonaName(review.getUser().getSteamUser() != null ? review.getUser().getSteamUser().getPersonaName() : null)
                 .rating(review.getRating())
                 .reviewText(review.getReviewText())
                 .createdAt(review.getCreatedAt())

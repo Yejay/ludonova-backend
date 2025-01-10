@@ -54,4 +54,7 @@ public class Game {
     private LocalDate releaseDate;
 
     private Double rating;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 }

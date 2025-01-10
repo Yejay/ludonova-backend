@@ -1,6 +1,7 @@
 package com.bht.ludonova.service;
 
 import com.bht.ludonova.dto.rawg.RawgSearchResponseDTO;
+import com.bht.ludonova.dto.rawg.RawgGameDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +38,39 @@ public class RawgService {
                 .retrieve()
                 .bodyToMono(RawgSearchResponseDTO.class)
                 .block();
+    }
+
+    public RawgGameDTO getGameDetails(Long gameId) {
+        log.debug("Fetching game details from RAWG for game ID: {}", gameId);
+        try {
+            String response = rawgWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/games/{id}")
+                            .queryParam("key", apiKey)
+                            .build(gameId))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            log.debug("Raw RAWG API response for game details: {}", response);
+
+            if (response == null) {
+                log.error("Received null response from RAWG API for game details");
+                return null;
+            }
+
+            try {
+                objectMapper.findAndRegisterModules(); // This helps with date handling
+                return objectMapper.readValue(response, RawgGameDTO.class);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to parse RAWG API game details response: {}", e.getMessage());
+                log.error("Raw response was: {}", response);
+                throw new RuntimeException("Failed to parse RAWG API game details response", e);
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch game details from RAWG: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch game details from RAWG", e);
+        }
     }
 
     public RawgSearchResponseDTO listGames(int page, String ordering, String platforms, Integer pageSize,

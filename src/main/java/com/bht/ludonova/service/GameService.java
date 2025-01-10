@@ -3,6 +3,7 @@ package com.bht.ludonova.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.HashSet;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
@@ -239,10 +240,20 @@ public class GameService {
 
     @Transactional
     protected Game syncGameFromRawg(RawgGameDTO rawgGame) {
+        // Fetch detailed game information
+        final RawgGameDTO gameDetails;
+        RawgGameDTO details = rawgService.getGameDetails(rawgGame.getId());
+        if (details == null) {
+            log.warn("Could not fetch game details for game: {}", rawgGame.getName());
+            gameDetails = rawgGame; // Fallback to basic info
+        } else {
+            gameDetails = details;
+        }
+
         return gameRepository.findByApiIdAndSource(
-                        rawgGame.getId().toString(), GameSource.RAWG)
-                .map(existing -> updateGameFromRawg(existing, rawgGame))
-                .orElseGet(() -> createGameFromRawg(rawgGame));
+                        gameDetails.getId().toString(), GameSource.RAWG)
+                .map(existing -> updateGameFromRawg(existing, gameDetails))
+                .orElseGet(() -> createGameFromRawg(gameDetails));
     }
 
     private Game updateGameFromRawg(Game existing, RawgGameDTO rawgGame) {
@@ -253,6 +264,7 @@ public class GameService {
         existing.setGenres(rawgGame.getGenres().stream()
                 .map(RawgGameDTO.Genre::getName)
                 .collect(Collectors.toSet()));
+        existing.setDescription(rawgGame.getDescription());
         existing.setRawgLastUpdated(LocalDateTime.now());
         return gameRepository.save(existing);
     }
@@ -270,6 +282,7 @@ public class GameService {
                 .genres(rawgGame.getGenres().stream()
                         .map(RawgGameDTO.Genre::getName)
                         .collect(Collectors.toSet()))
+                .description(rawgGame.getDescription())
                 .rawgLastUpdated(LocalDateTime.now())
                 .build();
         return gameRepository.save(game);
