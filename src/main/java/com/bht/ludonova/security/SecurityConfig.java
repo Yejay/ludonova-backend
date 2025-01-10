@@ -45,6 +45,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers(
                                 "/api/auth/login",
+                                "/api/auth/register",
                                 "/api/auth/refresh",
                                 "/api/auth/steam/login",
                                 "/api/auth/steam/return",

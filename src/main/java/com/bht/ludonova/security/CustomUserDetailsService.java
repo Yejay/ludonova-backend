@@ -54,11 +54,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        log.debug("Attempting to load user by login: {}", login);
 
-        log.debug("Loading user: {} with role: {}", username, user.getRole());
+        User user = userRepository.findByUsername(login)
+                .orElseGet(() -> userRepository.findByEmail(login)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found with login: " + login)));
+
+        log.debug("Loading user: {} with role: {}", user.getUsername(), user.getRole());
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         // Add base USER role
@@ -67,10 +70,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         // Add ADMIN role if applicable
         if (user.getRole() == Role.ADMIN) {
             authorities.add(new SimpleGrantedAuthority(Role.ADMIN.getSpringSecurityRole()));
-            log.debug("Added ADMIN role for user: {}", username);
+            log.debug("Added ADMIN role for user: {}", user.getUsername());
         }
 
-        log.debug("Final authorities for user {}: {}", username, authorities);
+        log.debug("Final authorities for user {}: {}", user.getUsername(), authorities);
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
