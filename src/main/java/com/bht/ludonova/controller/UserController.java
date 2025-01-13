@@ -9,16 +9,20 @@ import com.bht.ludonova.model.enums.Role;
 import com.bht.ludonova.repository.UserRepository;
 import com.bht.ludonova.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -66,7 +70,7 @@ public class UserController {
     // Admin endpoints below
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
         try {
             UserDTO createdUser = userService.createUser(createUserDTO);
@@ -80,8 +84,13 @@ public class UserController {
 
     // Get all users (admin only)
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.debug("Current user authorities: {}", auth.getAuthorities());
+        log.debug("Is authenticated: {}", auth.isAuthenticated());
+        log.debug("Principal: {}", auth.getPrincipal());
+        
         List<User> users = userRepository.findAll();
         users.forEach(user -> user.setPassword(null));
         return ResponseEntity.ok(users);
@@ -89,7 +98,7 @@ public class UserController {
 
     // Get specific user (admin only)
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         return userRepository.findById(id)
                 .map(user -> {
@@ -101,7 +110,7 @@ public class UserController {
 
     // Update any user (admin only)
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,
             @RequestBody UserUpdateDTO updateDTO) {
@@ -122,7 +131,7 @@ public class UserController {
 
     // Delete user (admin only)
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);

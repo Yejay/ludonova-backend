@@ -95,25 +95,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Claims claims = tokenProvider.getClaimsFromToken(jwt, false);
                     String username = claims.getSubject();
 
-                    // Extract authorities from claims
-                    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                    if (claims.get("authorities") instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<String> authoritiesList = (List<String>) claims.get("authorities");
-                        authorities = authoritiesList.stream()
-                                .map(SimpleGrantedAuthority::new)
-                                .collect(Collectors.toList());
-                    }
-
-                    log.debug("Token claims authorities: {}", authorities);
-
+                    // Load user details and use their authorities
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                    log.debug("User authorities from UserDetails: {}", userDetails.getAuthorities());
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
                                     null,
-                                    authorities  // Use the authorities from token
+                                    userDetails.getAuthorities()  // Use authorities from UserDetails
                             );
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
