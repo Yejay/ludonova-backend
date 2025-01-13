@@ -49,27 +49,33 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        // Generate verification code (6 digits)
-        String verificationCode = String.format("%06d", (int) (Math.random() * 1000000));
-        LocalDateTime codeExpiry = LocalDateTime.now().plusHours(24);
+        // Only generate verification code if email is not pre-verified
+        String verificationCode = null;
+        LocalDateTime codeExpiry = null;
+        if (!createUserDTO.isEmailVerified()) {
+            verificationCode = String.format("%06d", (int) (Math.random() * 1000000));
+            codeExpiry = LocalDateTime.now().plusHours(24);
+        }
 
         User user = User.builder()
                 .username(createUserDTO.getUsername())
                 .password(passwordEncoder.encode(createUserDTO.getPassword()))
                 .email(createUserDTO.getEmail())
                 .role(createUserDTO.getRole())
-                .emailVerified(false)
+                .emailVerified(createUserDTO.isEmailVerified())
                 .verificationCode(verificationCode)
                 .verificationCodeExpiry(codeExpiry)
                 .build();
 
         User savedUser = userRepository.save(user);
 
-        // Send verification email
-        try {
-            emailService.sendVerificationEmail(user.getEmail(), verificationCode);
-        } catch (MessagingException e) {
-            throw new LudoNovaException("Failed to send verification email");
+        // Send verification email only if email is not pre-verified
+        if (!createUserDTO.isEmailVerified() && verificationCode != null) {
+            try {
+                emailService.sendVerificationEmail(user.getEmail(), verificationCode);
+            } catch (MessagingException e) {
+                throw new LudoNovaException("Failed to send verification email");
+            }
         }
 
         return convertToDTO(savedUser);
