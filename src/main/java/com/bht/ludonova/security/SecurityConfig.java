@@ -47,6 +47,8 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/register",
                                 "/api/auth/refresh",
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
                                 "/api/auth/steam/login",
                                 "/api/auth/steam/return",
                                 // Swagger UI and OpenAPI endpoints

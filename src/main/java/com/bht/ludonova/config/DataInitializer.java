@@ -42,6 +42,7 @@ public class DataInitializer {
                         .password(passwordEncoder.encode("test123"))
                         .email("test@example.com")
                         .role(Role.USER)
+                        .emailVerified(true)
                         .build();
                 testUser = userRepository.save(testUser);
                 log.info("Test user created successfully");
@@ -56,6 +57,7 @@ public class DataInitializer {
                         .password(passwordEncoder.encode("admin123"))
                         .email("admin@example.com")
                         .role(Role.ADMIN)
+                        .emailVerified(true)
                         .build();
                 userRepository.save(adminUser);
                 log.info("Admin user created successfully");

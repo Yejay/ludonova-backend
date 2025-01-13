@@ -31,7 +31,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         Map<String, String> credentials = Map.of(
-                "username", loginRequest.getUsername(),
+                "login", loginRequest.getLogin(),
                 "password", loginRequest.getPassword()
         );
 
@@ -47,14 +47,23 @@ public class AuthController {
         // Create the user
         UserDTO createdUser = userService.createUser(createUserDTO);
 
-        // Authenticate the user
-        Map<String, String> credentials = Map.of(
-                "username", createUserDTO.getUsername(),
-                "password", createUserDTO.getPassword()
-        );
+        // Return response without authentication tokens
+        // User needs to verify email before they can log in
+        return ResponseEntity.ok(new AuthenticationResponse(null, createdUser));
+    }
 
-        AuthenticationResponse response = authService.authenticate("basic", credentials);
-        return ResponseEntity.ok(response);
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(
+            @RequestParam String email,
+            @RequestParam String code) {
+        userService.verifyEmail(email, code);
+        return ResponseEntity.ok("Email verified successfully");
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<String> resendVerificationEmail(@RequestParam String email) {
+        userService.resendVerificationEmail(email);
+        return ResponseEntity.ok("Verification email sent");
     }
 
     @PostMapping("/refresh")

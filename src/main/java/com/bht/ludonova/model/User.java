@@ -1,12 +1,12 @@
 package com.bht.ludonova.model;
 
 import com.bht.ludonova.model.enums.Role;
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -25,8 +25,18 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column
+    @Column(unique = true)
     private String email;
+
+    @Column(name = "email_verified")
+    @Builder.Default
+    private boolean emailVerified = false;
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "verification_code_expiry")
+    private LocalDateTime verificationCodeExpiry;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "steam_id")
@@ -35,5 +45,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private Role role = Role.USER;  // Default to USER role
 }

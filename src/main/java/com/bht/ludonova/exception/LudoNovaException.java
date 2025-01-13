@@ -1,14 +1,11 @@
 package com.bht.ludonova.exception;
 
 public class LudoNovaException extends RuntimeException {
-    private final String errorCode;
-
-    public LudoNovaException(String message, String errorCode) {
+    public LudoNovaException(String message) {
         super(message);
-        this.errorCode = errorCode;
     }
 
-    public String getErrorCode() {
-        return errorCode;
+    public LudoNovaException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

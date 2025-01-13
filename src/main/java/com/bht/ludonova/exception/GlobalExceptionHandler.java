@@ -15,13 +15,30 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
-        ErrorResponse error = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                HttpStatus.UNAUTHORIZED.value()
-        );
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<Map<String, Object>> handleAuthenticationException(AuthenticationException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("errorCode", ex.getErrorCode());
+
+        // If it's an email verification error, extract the email from the message
+        if ("EMAIL_NOT_VERIFIED".equals(ex.getErrorCode())) {
+            String email = extractEmailFromMessage(ex.getMessage());
+            if (email != null) {
+                body.put("email", email);
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    private String extractEmailFromMessage(String message) {
+        // Extract email from the message format: "Please verify your email (email@example.com) before logging in"
+        int startIndex = message.indexOf('(');
+        int endIndex = message.indexOf(')');
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            return message.substring(startIndex + 1, endIndex);
+        }
+        return null;
     }
 
     @ExceptionHandler(SteamAuthenticationException.class)

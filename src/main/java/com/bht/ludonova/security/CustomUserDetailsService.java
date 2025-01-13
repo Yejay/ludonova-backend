@@ -23,35 +23,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        User user = userRepository.findByUsername(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-//
-//        log.debug("Loading user: {} with role: {}", username, user.getRole());
-//
-//        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-//        // Add ROLE_USER by default
-//        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-//
-//        // Add ROLE_ADMIN if the user is an admin
-//        if (user.getRole() == Role.ADMIN) {
-//            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-//            log.debug("Added ADMIN role for user: {}", username);
-//        }
-//
-//        return org.springframework.security.core.userdetails.User.builder()
-//                .username(user.getUsername())
-//                .password(user.getPassword())
-//                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
-//                .accountExpired(false)
-//                .accountLocked(false)
-//                .credentialsExpired(false)
-//                .disabled(false)
-//                .build();
-//    }
-
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
