@@ -1,6 +1,8 @@
 package com.bht.ludonova.security;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,10 +19,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
@@ -30,8 +34,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("Configuring security filter chain");
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .cors(cors -> {
+                        log.info("Setting up CORS configuration");
+                        cors.configurationSource(corsConfigurationSource);
+                })
                 .csrf(csrf -> csrf.disable())
                 // Add headers configuration
                 .headers(headers -> headers
